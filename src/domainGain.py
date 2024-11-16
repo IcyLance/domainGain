@@ -115,7 +115,7 @@ except:
 fmcp.printSuccess("Here is a list of available, categorized domains")
 goodDomList = []
 idx = 0
-for key, val in domains.iteritems():
+for key, val in domains.items():
 	if idx > 10:
 		break
 	price = ns.GetPrice( key )
@@ -135,13 +135,13 @@ while True:
 		else:
 			fmcp.printError("Invalid choice, please choose again")
 	except (KeyboardInterrupt, Exception) as err:
-		print err
+		print(err)
 		sys.exit(0)
 
 		fmcp.printError("Invalid entry, please enter a number")
 
 while True:
-	ipAddress = raw_input("Please enter the IP address of the host to which you would like to point the new domain: ")
+	ipAddress = input("Please enter the IP address of the host to which you would like to point the new domain: ")
 	try:
 		socket.inet_aton(ipAddress)
 		break

@@ -5,9 +5,8 @@
 # Overview: This module is a front-end for the NameSilo api
 ################################################################################
 
-import urllib2
-import urllib
-import cookielib
+from urllib import request, parse
+from http import cookiejar
 
 class NameSilo( object ):
     def __init__(self, apiKey, paymentId):
@@ -25,25 +24,25 @@ class NameSilo( object ):
 	#Gets the price of a domain. 
 	#For some reason this isn't part of the API
     def GetPrice( self, domain ):
-	cj = cookielib.CookieJar()
-        
-	#Setup request
-	data = urllib.urlencode({'domain_search' : domain, 'x' : '0', 'y' : '0' })
-        opener = urllib2.build_opener( urllib2.HTTPCookieProcessor( cj ) )
+        cj = request.CookieJar()
+            
+        #Setup request
+        data = parse.urlencode({'domain_search' : domain, 'x' : '0', 'y' : '0' })
+        opener = request.build_opener( request.HTTPCookieProcessor( cj ) )
         opener.addheaders = [('User-Agent', self.hdr['User-Agent'])]
 
-	#Perform necessary requests, in order, and get the needed response
+        #Perform necessary requests, in order, and get the needed response
         res = opener.open("https://www.namesilo.com/")
         res = opener.open("https://www.namesilo.com/domain_results.php", data)
         content = res.read()
-        
-	#Determine the price for domain with the given extension (e.g., .net, .com, etc)
-	extension = domain.split('.')[1]
+            
+        #Determine the price for domain with the given extension (e.g., .net, .com, etc)
+        extension = domain.split('.')[1]
         splitstring = "<label for=\"{0}_selection\">".format(extension)
         content = content.split(splitstring)[1]
         content = content.split("<em>(")[1]
         price = content.split(")<")[0]
-	return price
+        return price
 
         #Registers a domain, deletes the default DNS records
         #and then creates/sets an A record to point to
@@ -57,7 +56,7 @@ class NameSilo( object ):
             self.deleteDnsRecord( domain, record )
 
         #rrhost = domain.split(".")[0]
-	rrhost = ""
+        rrhost = ""
         self.addDnsRecord( domain, "A", rrhost, ipAddress )
 
     #Adds a new DNS record given the following:
@@ -73,15 +72,15 @@ class NameSilo( object ):
     def addDnsRecord( self, domain, rrtype, rrhost, rrvalue, rrttl = 3600):
         addDnsRecordUrl = "{0}/dnsAddRecord?version=1&type=xml&key={1}&domain={2}&rrtype={3}&rrhost={4}&rrvalue={5}&rrttl={6}"
 
-        req = urllib2.Request(  addDnsRecordUrl.format( self.baseUrl, self.apiKey, domain, rrtype, rrhost, rrvalue, rrttl ),
+        req = request.Request(  addDnsRecordUrl.format( self.baseUrl, self.apiKey, domain, rrtype, rrhost, rrvalue, rrttl ),
                                 headers = self.hdr )
 
         resp = ""
 
         try:
-            resp = urllib2.urlopen(req)
-        except urllib2.HTTPError, e:
-            print e.fp.read()
+            resp = request.urlopen(req)
+        except request.HTTPError as e:
+            print(e.fp.read())
             return
 
         content = resp.read()
@@ -94,15 +93,15 @@ class NameSilo( object ):
     def deleteDnsRecord( self, domain, rrid ):
         deleteDnsRecordUrl = "{0}/dnsDeleteRecord?version=1&type=xml&key={1}&domain={2}&rrid={3}"
 
-        req = urllib2.Request(  deleteDnsRecordUrl.format( self.baseUrl, self.apiKey, domain, rrid ),
+        req = request.Request(  deleteDnsRecordUrl.format( self.baseUrl, self.apiKey, domain, rrid ),
                                 headers = self.hdr )
 
         resp = ""
 
         try:
-            resp = urllib2.urlopen(req)
-        except urllib2.HTTPError, e:
-            print e.fp.read()
+            resp = request.urlopen(req)
+        except request.HTTPError as e:
+            print(e.fp.read())
             return
 
         content = resp.read()
@@ -114,15 +113,15 @@ class NameSilo( object ):
     def getDnsRecordIds( self, domain ):
         getDnsRecordsUrl = "{0}/dnsListRecords?version=1&type=xml&key={1}&domain={2}"
 
-        req = urllib2.Request(  getDnsRecordsUrl.format( self.baseUrl, self.apiKey, domain ),
+        req = request.Request(  getDnsRecordsUrl.format( self.baseUrl, self.apiKey, domain ),
                                 headers = self.hdr )
 
         resp = ""
 
         try:
-            resp = urllib2.urlopen(req)
-        except urllib2.HTTPError, e:
-            print e.fp.read()
+            resp = request.urlopen(req)
+        except request.HTTPError as e:
+            print(e.fp.read())
             return
 
         content = resp.read()
@@ -150,18 +149,18 @@ class NameSilo( object ):
 
         else:
             domainsString = domains
-        req = urllib2.Request(  checkRegAvailabilityUrl.format( self.baseUrl, self.apiKey, domainsString ),
+        req = request.Request(  checkRegAvailabilityUrl.format( self.baseUrl, self.apiKey, domainsString ),
                                 headers = self.hdr )
 
         resp = ""
         try:
-            resp = urllib2.urlopen(req)
-        except urllib2.HTTPError, e:
-            print e.fp.read()
+            resp = request.urlopen(req)
+        except request.HTTPError as e:
+            print(e.fp.read())
             return
             
         content = resp.read()
-	try:
+        try:
             content = content.split("<available>", 1)[1]
             content = content.split("</available>",1)[0]
         except:
@@ -179,13 +178,13 @@ class NameSilo( object ):
     def registerDomain( self, domain ):
         regDomainUrl ="{0}/registerDomain?version=1&type=xml&key={1}&domain={2}&payment_id={3}&years=1&auto_renew=0&private=1"
 
-        req = urllib2.Request(  regDomainUrl.format( self.baseUrl, self.apiKey, domain, self.paymentId ),
+        req = request.Request(  regDomainUrl.format( self.baseUrl, self.apiKey, domain, self.paymentId ),
                                 headers = self.hdr )
 
         try:
-            resp = urllib2.urlopen(req)
-        except urllib2.HTTPError, e:
-            print e.fp.read()
+            resp = request.urlopen(req)
+        except request.HTTPError as e:
+            print(e.fp.read())
             return
 
         return True

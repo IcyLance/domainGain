@@ -13,9 +13,7 @@
 import os
 import sys
 import stat
-import argparse
-import errno
-import urllib2
+from urllib import request
 import json
 import time
 import ast
@@ -40,19 +38,19 @@ class K9Cat( object ):
 			return None
 
 		try:
-			u = urllib2.build_opener()
+			u = request.build_opener()
 			u.addheaders = [('User-agent', 'webcat.py/1.0 (https://blog.rootshell.be)')]
 			r = u.open(self.categoriesUrl)
 			data = json.load(r)
 			d = dict([('%02x' % c['num'], c['name']) for c in data])
-		except urllib2.HTTPError, e:
+		except request.HTTPError as e:
 			sys.stderr.write('Cannot fetch categories, HTTP error: %s\n' % str(e.code))
-		except urllib2.URLError, e:
+		except request.URLError as e:
 			sys.stderr.write('Cannot fetch categories, URL error: %s\n' % str(e.reason))
 		try:
 			f = open(name, 'wb')
 			f.write(dumps(d))
-		except Exception, e:
+		except Exception as e:
 			f.close()
 			sys.stderr.write('Cannot save categories: %s\n' % e)
 		return d
@@ -69,7 +67,7 @@ class K9Cat( object ):
 			data = f.read()
 			d = ast.literal_eval(data)
 		
-		except Exception, e:
+		except Exception as e:
 			f.close()
 			sys.stderr.write('Cannot load categories: %s (use -F for force a fetch)\n' % e)
 			exit(1)
@@ -88,7 +86,7 @@ class K9Cat( object ):
 		else:
 			webCats = self.loadCategories(self.categoriesFile)
 
-		r = urllib2.urlopen('http://sp.cwfservice.net/1/R/%s/K9-00006/0/GET/HTTP/%s/%s///' % (self.k9License, hostname, 80))
+		r = request.urlopen('http://sp.cwfservice.net/1/R/%s/K9-00006/0/GET/HTTP/%s/%s///' % (self.k9License, hostname, 80))
 		if r.code == 200:
 			e = fromstring(r.read())
 			domc = e.find('DomC')

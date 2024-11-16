@@ -8,7 +8,8 @@
 #           expiresdomains.net and signing up for a free account
 ###############################################################################
 from fmcprint import *
-import cookielib, urllib, urllib2
+from http import cookiejar
+from urllib import request, parse
 
 class ExpiredDomains( object ):
     def __init__( self ):
@@ -22,17 +23,17 @@ class ExpiredDomains( object ):
         self.unauthSearchAcrUrl = "https://www.expireddomains.net/deleted-domains/?o=aentries&r=d&ftlds[]={0}&start={1}"
         self.domainTypes=[2, 3, 4, 12, 249]
         self.startNums = [0, 50, 100]
-        self.cookies = cookielib.CookieJar()
+        self.cookies = cookiejar.CookieJar()
 
     #Logs into expireddomains.net with the provided username and password
     #Cookies are saved for later use
     def login( self, uname, passw):
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor( self.cookies ))
+        opener = request.build_opener(request.HTTPCookieProcessor( self.cookies ))
         values = {  'login' : uname,
                     'password' : passw,
                     'redirect_2_url': '%2F' }
 
-        data = urllib.urlencode( values )
+        data = parse.urlencode( values )
         resp = opener.open( self.loginUrl, data )
         content = resp.read()
 
@@ -40,7 +41,7 @@ class ExpiredDomains( object ):
 
     #Pulls the most recently-expired .info domains from expireddomains.net
     def searchRecent( self ):
-        opener = urllib2.build_opener( urllib2.HTTPCookieProcessor( self.cookies ) )
+        opener = request.build_opener( request.HTTPCookieProcessor( self.cookies ) )
         resp = opener.open( self.searchRecentUrl )
         content = resp.read()
         results = self.parseResp( content )
@@ -49,7 +50,7 @@ class ExpiredDomains( object ):
 
     #Pulls expired domains with the best SimilarWeb rating from expireddomains.net
     def searchSimWeb( self ):
-        opener = urllib2.build_opener( urllib2.HTTPCookieProcessor( self.cookies ) )
+        opener = request.build_opener( request.HTTPCookieProcessor( self.cookies ) )
         resp = opener.open( self.searchSimWebUrl )
         content = resp.read()
         results = self.parseResp( content )
@@ -67,7 +68,7 @@ class ExpiredDomains( object ):
 
     def parseUnauthResp( self, resp ):
         results = []
-        doms = resp.split("field_domain\">")
+        doms = resp.split(b"field_domain\">")
 
         for dom in doms:
             try:
@@ -84,7 +85,7 @@ class ExpiredDomains( object ):
         results = []
         for domType in self.domainTypes:
             for num in self.startNums:
-                opener = urllib2.build_opener( urllib2.HTTPCookieProcessor( self.cookies ) )
+                opener = request.build_opener( request.HTTPCookieProcessor( self.cookies ) )
                 resp = opener.open( url.format( domType, num ) )
                 content = resp.read()
                 results += self.parseUnauthResp( content )

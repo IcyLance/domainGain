@@ -1,6 +1,3 @@
-from __future__ import print_function
-import sys
-
 class FmcPrint( object ):
     def __init__( self ):
         pass
